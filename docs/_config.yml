@@ -4,4 +4,4 @@ email: dasberg@kth.se, andblomq@kth.se
 github_username: dasberg # DO NOT include the @ character, or else the build will fail!
 
 show_excerpts: true # set to false to remove excerpts on the homepage
-theme: jekyll-theme-cayman
+theme: minima
