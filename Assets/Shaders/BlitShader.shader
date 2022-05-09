@@ -6,6 +6,9 @@ Shader "Unlit/BlitShader"
         _3DTexture ("3DTexture", 3D) = "white" {}
         _BoundsMin ("Bounds Min", Vector) = (0,0,0,0)
         _BoundsMax ("Bounds Max", Vector) = (1,1,1,1)
+
+        _DensityThreshold ("Density Threshold", Float) = 1
+        _DensityMultiplier ("Cloud Density", Float) = 1
     }
     SubShader
     {
@@ -31,6 +34,7 @@ Shader "Unlit/BlitShader"
                 float4 vertex : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float3 viewVector : TEXCOORD1;
+                float3 texcoord : TEXCOORD2;
             };
 
             v2f vert (appdata v)
@@ -39,6 +43,7 @@ Shader "Unlit/BlitShader"
 
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
+                o.texcoord = v.vertex.xyz;
 
                 float3 viewVector = mul(unity_CameraInvProjection, float4(v.uv * 2 - 1, 0, -1));
                 o.viewVector = mul(unity_CameraToWorld, float4(viewVector,0));
@@ -59,8 +64,8 @@ Shader "Unlit/BlitShader"
             float4 _BoundsMin;
             float4 _BoundsMax;
 
-            // Light (light position is given by the builtin variable: _WorldSpaceLightPos0)
-            // float4 _LightColor;
+            float _DensityThreshold;
+            float _DensityMultiplier;
 
             // -----------------------------------------------------------------------
             // Functions
@@ -90,19 +95,12 @@ Shader "Unlit/BlitShader"
                 return float2(dstToBox, dstInsideBox);
             }
 
-            float4 BlendUnder(float4 color, float4 newColor)
-            {
-                color.rgb += (1.0 - color.a) * newColor.a * newColor.rgb;
-                color.a += (1.0 - color.a) * newColor.a;
-                return color;
-            }
-
-            // for now it only reads our 3D texture at ray position and accumulate the color
-            float4 sampleDensity(float3 rayPos, float4 color) {
+            // for now it only reads our 3D texture at ray position and accumulate the density
+            float sampleDensity(float3 rayPos) {
                 float4 sample = tex3D(_3DTexture, rayPos);
-                sample.a *= 0.005;
-                color = BlendUnder(color, sample);
-                return color;
+                sample *= 0.02;
+                float density = max(0, sample + _DensityThreshold) * _DensityMultiplier;
+                return density;
             }
 
             // -----------------------------------------------------------------------
@@ -133,20 +131,22 @@ Shader "Unlit/BlitShader"
                 float dstLimit = min(depth - dstToBox, dstInsideBox);
 
                 float4 cloudColor = float4(0,0,0,0);
+                float totalDensity = 0;
 
                 // Ray march through the box volume and accumulate color
-                // the [loop] attribute tells the compiler this is a loop (slow code) which can not unwrap
+                // the [loop] attribute tells the compiler this is a loop (slow code) which can not be unwraped
                 // ref: https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-for
                 [loop] while(dstTravelled < dstLimit) {
                     rayPos = entryPoint + rayDir * dstTravelled;
-                    cloudColor = sampleDensity(rayPos, cloudColor);
+                    totalDensity += sampleDensity(rayPos);
                     dstTravelled += stepSize;
                 }
+                float lightTransmittance = max(min(exp(-totalDensity), 1), 0);
 
                 // Due to we have a Blit shader we need to sample the rest of the image and draw it aswell
-                float3 bgCol = tex2D(_MainTex, i.uv);
-                float3 col = cloudColor + bgCol;
-                return float4(col, 1);
+                float4 col = tex2D(_MainTex, i.uv);
+                col *= lightTransmittance;
+                return col;
             }
             ENDCG
         }
