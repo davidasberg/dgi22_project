@@ -6,7 +6,14 @@ public class Rotate : MonoBehaviour
 {
     // Start is called before the first frame update
     public float rotateSpeed = 100f;
-    void FixedUpdate() {
-        transform.Rotate(new Vector3(rotateSpeed/2, rotateSpeed, rotateSpeed/3) * Time.deltaTime);
+
+    public bool aroundPoint;
+    public Transform target;
+
+    void Update() {
+        if(aroundPoint)
+            transform.RotateAround(target.transform.position, Vector3.up, rotateSpeed * Time.deltaTime);
+        else
+            transform.Rotate(new Vector3(0, rotateSpeed, 0) * Time.deltaTime);
     }
 }
