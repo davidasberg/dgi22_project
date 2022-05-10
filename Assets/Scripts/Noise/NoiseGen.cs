@@ -21,7 +21,7 @@ public class NoiseGen : MonoBehaviour
 
 
     [Header("Update Settings")]
-    private bool updateNoise;
+    public bool updateNoise;
 
     //internal 
     private List<ComputeBuffer> buffersToRelease = new List<ComputeBuffer>();
