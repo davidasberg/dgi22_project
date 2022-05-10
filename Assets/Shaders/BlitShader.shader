@@ -98,8 +98,8 @@ Shader "Unlit/BlitShader"
             // for now it only reads our 3D texture at ray position and accumulate the density
             float sampleDensity(float3 rayPos) {
                 float4 sample = tex3D(_3DTexture, rayPos);
-                sample *= 0.02;
-                float density = max(0, sample + _DensityThreshold) * _DensityMultiplier;
+                // sample *= 0.001;
+                float density = max(0, sample.r + _DensityThreshold) * _DensityMultiplier;
                 return density;
             }
 
@@ -139,6 +139,7 @@ Shader "Unlit/BlitShader"
                 [loop] while(dstTravelled < dstLimit) {
                     rayPos = entryPoint + rayDir * dstTravelled;
                     totalDensity += sampleDensity(rayPos);
+                    cloudColor = tex3D(_3DTexture, rayPos);
                     dstTravelled += stepSize;
                 }
                 float lightTransmittance = max(min(exp(-totalDensity), 1), 0);
