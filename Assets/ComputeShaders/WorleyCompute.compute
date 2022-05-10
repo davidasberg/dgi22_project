@@ -1,0 +1,159 @@
+
+#pragma kernel CSWorleyNoise
+#pragma kernel CSWorleyNormalize
+
+static const int numThreads = 8;
+static const int minMaxAccuracy = 10000000;
+
+uint res;
+RWTexture3D<float4> Result;
+RWStructuredBuffer<int> minMax;
+StructuredBuffer<float3> pointsA;
+StructuredBuffer<float3> pointsB;
+StructuredBuffer<float3> pointsC;
+
+int numDivisionsA;
+int numDivisionsB;
+int numDivisionsC;
+
+int channel;
+float persistence;
+bool inv;
+int tile; 
+
+static const int3 offsets[] =
+{
+    // centre
+    int3(0,0,0),
+    // front face
+    int3(0,0,1),
+    int3(-1,1,1),
+    int3(-1,0,1),
+    int3(-1,-1,1),
+    int3(0,1,1),
+    int3(0,-1,1),
+    int3(1,1,1),
+    int3(1,0,1),
+    int3(1,-1,1),
+    // back face
+    int3(0,0,-1),
+    int3(-1,1,-1),
+    int3(-1,0,-1),
+    int3(-1,-1,-1),
+    int3(0,1,-1),
+    int3(0,-1,-1),
+    int3(1,1,-1),
+    int3(1,0,-1),
+    int3(1,-1,-1),
+    // ring around centre
+    int3(-1,1,0),
+    int3(-1,0,0),
+    int3(-1,-1,0),
+    int3(0,1,0),
+    int3(0,-1,0),
+    int3(1,1,0),
+    int3(1,0,0),
+    int3(1,-1,0)
+};
+
+float maxComponent(float3 vec) {
+    return max(vec.x, max(vec.y, vec.z));
+}
+
+float minComponent(float3 vec) {
+    return min(vec.x, min(vec.y, vec.z));
+}
+
+float worley(StructuredBuffer<float3> points, int numCells, float3 samplePos) {
+    samplePos = (samplePos * tile)%1;
+    int3 cell = floor (samplePos * numCells);
+    float minSqrDst = 1;
+
+    for (int cellIndex = 0; cellIndex < 27; cellIndex++) {
+    
+        int3 idOffset = cell + offsets[cellIndex];
+        
+        //adjecent cell is outside the grid, so wrap around to allow for seamless tiling
+        if (minComponent(idOffset) == -1 || maxComponent(idOffset) == numCells) {
+            int3 wrapID = (idOffset + numCells)%(uint3)numCells;
+            int wrapIndex = wrapID.x + numCells * (wrapID.y + numCells * wrapID.z);
+            float3 wrapPos = points[wrapIndex];
+            // Offset the wrapPos by all offsets to find which is closest
+            for (int i = 0; i < 27; i++) {
+                float3 offsetPos = (samplePos - (wrapPos + offsets[i]));
+                minSqrDst = min(minSqrDst, dot(offsetPos, offsetPos));
+            }
+        }
+        else {
+            int index = idOffset.x + numCells * (idOffset.y + numCells * idOffset.z);
+            float3 sampleOffset = samplePos - points[index];
+            minSqrDst = min(minSqrDst, dot(sampleOffset, sampleOffset));
+        }
+    }
+
+    return sqrt(minSqrDst);
+}
+
+[numthreads(numThreads,numThreads,numThreads)]
+void CSWorleyNoise (uint3 threadId : SV_DispatchThreadID) {
+    float3 pos = threadId / (float)res;
+    float layerA = worley(pointsA, numDivisionsA, pos);
+    float layerB = worley(pointsB, numDivisionsB, pos);
+    float layerC = worley(pointsC, numDivisionsC, pos);
+    float noise = layerA + layerB * persistence + layerC * persistence * persistence;
+    
+    // keep within [0,1]
+    float maxVal = 1 + persistence + persistence * persistence;
+    noise /= maxVal;
+
+    // invert texture if necessary
+    if (inv) {
+        noise = 1.0 - noise;
+    }
+
+    //update min and max values to the buffer
+    int val = (int) (noise * minMaxAccuracy);
+    InterlockedMin(minMax[0], val);
+    InterlockedMax(minMax[1], val);
+
+    //write to result buffer in channel
+    float4 channelMask = float4(0,0,0,0);
+    if (channel == 0) {
+        channelMask.x = 1;
+    }
+    else if (channel == 1) {
+        channelMask.y = 1;
+    }
+    else if (channel == 2) {
+        channelMask.z = 1;
+    }
+    else if (channel == 3) {
+        channelMask.w = 1;
+    }
+    
+    Result[threadId] = Result[threadId] * (1-channelMask) + noise * channelMask;
+}
+
+[numthreads(numThreads,numThreads,numThreads)]
+void CSWorleyNormalize (uint3 threadId : SV_DispatchThreadID)
+{
+    float minVal = (float)minMax[0]/minMaxAccuracy;
+    float maxVal = (float)minMax[1]/minMaxAccuracy;
+    float4 normalizedVal = (Result[threadId]-minVal)/(maxVal-minVal);
+    
+    float4 channelMask = float4(0,0,0,0);
+    if (channel == 0) {
+        channelMask.x = 1;
+    }
+    else if (channel == 1) {
+        channelMask.y = 1;
+    }
+    else if (channel == 2) {
+        channelMask.z = 1;
+    }
+    else if (channel == 3) {
+        channelMask.w = 1;
+    }
+
+    Result[threadId] = Result[threadId] * (1-channelMask) + normalizedVal * channelMask;
+}
