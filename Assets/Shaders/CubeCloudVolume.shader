@@ -6,7 +6,7 @@ Shader "Unlit/CubeCloudVolume"
     }
     SubShader
     {
-        Cull Back
+        Cull Back ZWrite Off ZTest Always
         Tags { 
             "Queue" = "Transparent" 
             "RenderType" = "Transparent" 
@@ -63,11 +63,15 @@ Shader "Unlit/CubeCloudVolume"
             float _DensityScale;
             float4 _Sphere;
             float _SphereRadius;
-            float3 _Offset;
-            float4 _ShapeNoiseScale;
-            float4 _DetailNoiseScale;
+            float3 _Pos;
+            float4 _ShapeNoiseWeights;
+            float4 _DetailNoiseWeights;
             float _DensityOffset;
             float3 _Bounds;
+            float _TimeScale;
+            float _CloudScale;
+            float _CloudOffset;
+            float _BaseCloudSpeed;
 
             // Light
             int _LightSteps;
@@ -97,9 +101,22 @@ Shader "Unlit/CubeCloudVolume"
             }
 
             float sampleDensity(float3 p) {
-                
-                float4 noise_from_shape = NoiseTexture.SampleLevel(samplerNoiseTexture, p, 0);
-                float4 noise_weights_normalized = _ShapeNoiseScale / dot(_ShapeNoiseScale, 1);
+            
+                // Calculate texture sample positions
+                const float baseScale = 1/1000.0;
+                const float offsetSpeed = 1/100.0;
+
+                float time = _Time.x * _TimeScale;
+                float boundsMin = _Pos - _Bounds / 2;
+                float boundsMax = _Pos + _Bounds / 2;
+                float size = boundsMax - boundsMin;
+                float3 boundsCentre = (boundsMin+boundsMax) * .5;
+                float3 uvw = (size * .5 + p) * baseScale * _CloudScale;
+                float3 shapeSamplePos = uvw + _CloudOffset * offsetSpeed + float3(time,time*0.1,time*0.2) * _BaseCloudSpeed;
+
+
+                float4 noise_from_shape = NoiseTexture.SampleLevel(samplerNoiseTexture, shapeSamplePos, 0);
+                float4 noise_weights_normalized = _ShapeNoiseWeights / dot(_ShapeNoiseWeights, 1);
 
                 //not sure what this does
                 float4 noise_fbm = dot(noise_from_shape, noise_weights_normalized);
@@ -128,7 +145,7 @@ Shader "Unlit/CubeCloudVolume"
 
                         // Light ray marching
                         float3 lightRay = rayOrigin;
-                        float3 lightDir = normalize(_WorldSpaceLightPos0 - lightRay);
+                        float3 lightDir = normalize(_WorldSpaceLightPos0);
                         for(int j = 0; j < _LightSteps; j++) {
                             float lightDensity = sampleDensity(lightRay);
                             accumulatedLight += lightDensity * _LightDensityScale;
