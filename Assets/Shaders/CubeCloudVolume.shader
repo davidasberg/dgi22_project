@@ -51,9 +51,7 @@ Shader "Unlit/CubeCloudVolume"
             // Globals
 
             sampler2D _MainTex;
-            // sampler3D _NoiseTexture;
 
-            // The name "NoiseTexture" needs to be same for texture and sampler
             Texture3D<float4> NoiseTexture;
             SamplerState samplerNoiseTexture;
             
@@ -70,6 +68,14 @@ Shader "Unlit/CubeCloudVolume"
             float4 _DetailNoiseScale;
             float _DensityOffset;
             float3 _Bounds;
+
+            // Light
+            int _LightSteps;
+            float _LightStepSize;
+            float _LightDensityScale;
+            float _LightAbsorbation;
+            float _LightDarknessThreshold;
+            float _LightTransmittance;
 
             // -----------------------------------------------------------------------
             // Functions
@@ -104,9 +110,13 @@ Shader "Unlit/CubeCloudVolume"
                 return 0;
             }
 
-            float rayMarch(float3 rayOrigin, float3 rayDir) {
+            float3 rayMarch(float3 rayOrigin, float3 rayDir) {
 
                 float density = 0;
+                float transmission = 0; 
+                float accumulatedLight = 0;
+                float transmittance = _LightTransmittance;
+                float light = 0;
 
                 for(int i = 0; i < _Steps; i++) {
 
@@ -115,11 +125,26 @@ Shader "Unlit/CubeCloudVolume"
                     float distance = sdRoundBox(rayOrigin, _Bounds, 0.05);
                     if(distance < 0) {
                         density += sampleDensity(rayOrigin);
+
+                        // Light ray marching
+                        float3 lightRay = rayOrigin;
+                        float3 lightDir = normalize(_WorldSpaceLightPos0 - lightRay);
+                        for(int j = 0; j < _LightSteps; j++) {
+                            float lightDensity = sampleDensity(lightRay);
+                            accumulatedLight += lightDensity * _LightDensityScale;
+
+                            lightRay += lightDir * _LightStepSize;
+                        }
+
+                        float lightTransmission = exp(-accumulatedLight);
+                        float shadow = _LightDarknessThreshold + lightTransmission * (1 - _LightDarknessThreshold);
+                        light += density * transmittance * shadow;
+                        transmittance *= exp(-density * _LightAbsorbation);
                     }
                     rayOrigin += rayDir * _StepSize;
                 }
 
-                return density;
+                return float3(light, density, transmittance);
             }
             
             // -----------------------------------------------------------------------
@@ -131,9 +156,12 @@ Shader "Unlit/CubeCloudVolume"
                 float3 rayOrigin = i.worldVertex;
                 float3 rayDir = rayOrigin - _WorldSpaceCameraPos;
                 float3 rayDirNormalized = normalize(rayDir);
-                float density = rayMarch(rayOrigin, rayDirNormalized);
-                density = max(0, min(1, density));
-                float4 col = float4(density,density,density,density);
+                float3 result = rayMarch(rayOrigin, rayDirNormalized);
+                float light = result.x;
+                float density = result.y;
+                float transmittance = result.z;
+                // density = max(0, min(1, density));
+                float4 col = float4(light,light,light,density);
                 return col;
             }
             ENDCG

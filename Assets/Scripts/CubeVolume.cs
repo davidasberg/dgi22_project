@@ -10,6 +10,14 @@ public class CubeVolume : MonoBehaviour
     public float stepSize;
     public float densityScale;
 
+    [Header("Light March Settings")]
+    public int lightSteps;
+    public float lightStepSize;
+    public float lightDensityScale;
+    public float lightAbsorbation;
+    public float lightDarknessThreshold;
+    public float lightTransmittance = 1;
+
     [Header("Shape Settings")]
     public Vector4 shapeNoiseScale;
     public float densityOffset;
@@ -17,10 +25,7 @@ public class CubeVolume : MonoBehaviour
     [Header("Detail Settings")]
     public Vector4 detailNoiseScale;
 
-    
-
     public Vector3 textureOffset;
-    // public Texture3D noiseTexture;
 
     public Shader shader;
 
@@ -35,9 +40,6 @@ public class CubeVolume : MonoBehaviour
     {
         meshRenderer = GetComponent<MeshRenderer>();
         noiseGen = GetComponent<NoiseGen>();
-
-        if (noiseGen == null)
-            Debug.Log("NULL");
 
         noiseGen.updateNoise = true;
 
@@ -57,6 +59,14 @@ public class CubeVolume : MonoBehaviour
         material.SetFloat("_Steps", steps);
         material.SetFloat("_StepSize", stepSize);
         material.SetFloat("_DensityScale", densityScale);
+
+        // Light march settings
+        material.SetInt("_LightSteps", lightSteps);
+        material.SetFloat("_LightStepSize", lightStepSize);
+        material.SetFloat("_LightDensityScale", lightDensityScale);
+        material.SetFloat("_LightAbsorbation", lightAbsorbation);
+        material.SetFloat("_LightDarknessThreshold", lightDarknessThreshold);
+        material.SetFloat("_LightTransmittance", lightTransmittance);
 
         material.SetVector("_Offset", textureOffset);
 
