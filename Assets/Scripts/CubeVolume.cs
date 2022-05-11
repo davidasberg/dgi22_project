@@ -9,7 +9,6 @@ public class CubeVolume : MonoBehaviour
     public int steps;
     public float stepSize;
     public float densityScale;
-
     [Header("Light March Settings")]
     public int lightSteps;
     public float lightStepSize;
@@ -18,12 +17,20 @@ public class CubeVolume : MonoBehaviour
     public float lightDarknessThreshold;
     public float lightTransmittance = 1;
 
-    [Header("Shape Settings")]
-    public Vector4 shapeNoiseScale;
+    
+
+    [Header("Base Shape Settings")]
+    public float cloudScale;
+    public Vector3 cloudOffset;
     public float densityOffset;
+    public Vector4 shapeNoiseWeights;
     
     [Header("Detail Settings")]
-    public Vector4 detailNoiseScale;
+    public Vector4 detailNoiseWeights;
+
+    [Header("Animation")]
+    public float animationSpeed;
+    public float baseCloudSpeed;
 
     public Vector3 textureOffset;
 
@@ -68,15 +75,23 @@ public class CubeVolume : MonoBehaviour
         material.SetFloat("_LightDarknessThreshold", lightDarknessThreshold);
         material.SetFloat("_LightTransmittance", lightTransmittance);
 
-        material.SetVector("_Offset", textureOffset);
+
+        // Pos
+        material.SetVector("_Pos", transform.position);
 
         // Bounds
         material.SetVector("_Bounds", new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z));
 
-        // Noise settings
-        material.SetVector("_ShapeNoiseScale", shapeNoiseScale);
-        material.SetVector("_DetailNoiseScale", detailNoiseScale);
+        // Flow speed
+        material.SetFloat("_TimeScale", Time.timeScale * animationSpeed);
+
+        //Base Noise settings
+        material.SetVector("_ShapeNoiseWeights", shapeNoiseWeights);
+        material.SetVector("_CloudOffset", cloudOffset);
+        material.SetVector("_DetailNoiseWeights", detailNoiseWeights);
         material.SetFloat("_DensityOffset", densityOffset);
+        material.SetFloat("_CloudScale", cloudScale);
+        material.SetFloat("_BaseCloudSpeed", baseCloudSpeed);
 
 
         // Textures
