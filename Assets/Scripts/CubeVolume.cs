@@ -29,6 +29,8 @@ public class CubeVolume : MonoBehaviour
 
     private NoiseGen noiseGen;
 
+
+
     private void Start()
     {
         meshRenderer = GetComponent<MeshRenderer>();
@@ -58,10 +60,14 @@ public class CubeVolume : MonoBehaviour
 
         material.SetVector("_Offset", textureOffset);
 
+        // Bounds
+        material.SetVector("_Bounds", new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z));
+
         // Noise settings
         material.SetVector("_ShapeNoiseScale", shapeNoiseScale);
         material.SetVector("_DetailNoiseScale", detailNoiseScale);
         material.SetFloat("_DensityOffset", densityOffset);
+
 
         // Textures
         material.SetTexture("NoiseTexture", noiseGen.shapeTexture);

@@ -69,6 +69,7 @@ Shader "Unlit/CubeCloudVolume"
             float4 _ShapeNoiseScale;
             float4 _DetailNoiseScale;
             float _DensityOffset;
+            float3 _Bounds;
 
             // -----------------------------------------------------------------------
             // Functions
@@ -77,8 +78,20 @@ Shader "Unlit/CubeCloudVolume"
                 return length(p - sphere) - radius;
             }
 
+            float sdBox( float3 p, float3 b )
+            {
+                float3 q = abs(p) - b;
+                return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+            }
+
+            float sdRoundBox( float3 p, float3 b, float r )
+            {
+                float3 q = abs(p) - b;
+                return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
+            }
+
             float sampleDensity(float3 p) {
-               
+                
                 float4 noise_from_shape = NoiseTexture.SampleLevel(samplerNoiseTexture, p, 0);
                 float4 noise_weights_normalized = _ShapeNoiseScale / dot(_ShapeNoiseScale, 1);
 
@@ -98,8 +111,8 @@ Shader "Unlit/CubeCloudVolume"
                 for(int i = 0; i < _Steps; i++) {
 
                     // Now we want to sample the volume at our new position
-                    float distance = sdfSphere(rayOrigin, _Sphere.xyz, _SphereRadius);
-
+                    //float distance = sdfSphere(rayOrigin, _Sphere.xyz, _SphereRadius);
+                    float distance = sdRoundBox(rayOrigin, _Bounds, 0.05);
                     if(distance < 0) {
                         density += sampleDensity(rayOrigin);
                     }

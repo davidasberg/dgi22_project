@@ -401,8 +401,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 943967295}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.06}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0.13, z: -0.06}
+  m_LocalScale: {x: 4.9029813, y: 0.15947834, z: 4.6191697}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -424,7 +424,7 @@ MonoBehaviour:
   stepSize: 0.001
   densityScale: 0.6
   shapeNoiseScale: {x: 1, y: 1, z: 1, w: 1}
-  densityOffset: -6.05
+  densityOffset: -6.06
   detailNoiseScale: {x: 0, y: 0, z: 0, w: 0}
   textureOffset: {x: 0, y: 0, z: 0}
   shader: {fileID: 4800000, guid: c84e3210e35b7494c813f4c0c47dc0b8, type: 3}
