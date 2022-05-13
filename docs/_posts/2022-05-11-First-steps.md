@@ -40,13 +40,13 @@ At this point we have only stumbled in the dark and explored different methods. 
 
 ![Figure 4. Improbable Art 1](/dgi22_project/assets/improbable-art-1.gif)
 
-In the gif above we tried to ray march a box on our 3D cube mesh which failed. We see that the box actually exists but it is being rendered on each face which is not what we want. We want to see a single box as a 3D object within the cube mesh. If that makes sense. The gif also shows a rotating camera which is why it spins.
+In the gif above we tried to ray march a box on our 3D cube mesh which failed. We see that the box actually exists but it is being rendered on each face which is not what we want. We want to see a single box as a 3D object within the cube mesh. If that makes sense. The gif also shows a rotating camera which is why it spins and the main camera has a bloom effect.
 
 Here is another improbable art but instead of a cube mesh it is on a sphere:
 
 ![Figure 4. Improbable Art 1](/dgi22_project/assets/improbable-art-2.gif)
 
-However after getting our vectors and math right we soon ended up with a ray marched 3D sphere inside a cube mesh:
+However after getting our vectors and math right we soon ended up with a ray marched 3D sphere inside a cube mesh. We changed to a sphere but you can use whatever object you can define a distance function to. The sphere lives in its own 3D world inside the cube mesh which is what we are looking for. The sphere is rendered by accumulating color at each step along rays which are inside the specified sphere. With this method we can now write a more complex density function which will sample a 3D noise texture at each step and create clouds from that.
 
-… to be continued.
+![Figure 5. Ray marching a sphere](/dgi22_project/assets/ray-march-sphere.gif)
 
