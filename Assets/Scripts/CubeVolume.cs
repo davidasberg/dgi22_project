@@ -76,11 +76,10 @@ public class CubeVolume : MonoBehaviour
         material.SetFloat("_LightTransmittance", lightTransmittance);
 
 
-        // Pos
+        // Pos + Bounds
         material.SetVector("_Pos", transform.position);
-
-        // Bounds
-        material.SetVector("_Bounds", new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z));
+        material.SetVector("_BoundsMax", transform.position + transform.localScale / 2.0f);
+        material.SetVector("_BoundsMin", transform.position - transform.localScale / 2.0f);
 
         // Flow speed
         material.SetFloat("_TimeScale", Time.timeScale * animationSpeed);

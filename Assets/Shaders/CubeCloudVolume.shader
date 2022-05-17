@@ -72,6 +72,8 @@ Shader "Unlit/CubeCloudVolume"
             float _CloudScale;
             float _CloudOffset;
             float _BaseCloudSpeed;
+            float3 _BoundsMax;
+            float3 _BoundsMin;
 
             // Light
             int _LightSteps;
@@ -100,6 +102,31 @@ Shader "Unlit/CubeCloudVolume"
                 return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
             }
 
+            // Returns (dstToBox, dstInsideBox). If ray misses box, dstInsideBox will be zero
+            float2 rayBoxDst(float3 boundsMin, float3 boundsMax, float3 rayOrigin, float3 invRaydir) {
+                // Adapted from: http://jcgt.org/published/0007/03/04/
+                
+                float3 t0 = (boundsMin - rayOrigin) * invRaydir;
+                float3 t1 = (boundsMax - rayOrigin) * invRaydir;
+                float3 tmin = min(t0, t1);
+                float3 tmax = max(t0, t1);
+                
+                float dstA = max(max(tmin.x, tmin.y), tmin.z);
+                float dstB = min(tmax.x, min(tmax.y, tmax.z));
+
+                // CASE 1: ray intersects box from outside (0 <= dstA <= dstB)
+                // dstA is dst to nearest intersection, dstB dst to far intersection
+
+                // CASE 2: ray intersects box from inside (dstA < 0 < dstB)
+                // dstA is the dst to intersection behind the ray, dstB is dst to forward intersection
+
+                // CASE 3: ray misses box (dstA > dstB)
+
+                float dstToBox = max(0, dstA);
+                float dstInsideBox = max(0, dstB - dstToBox);
+                return float2(dstToBox, dstInsideBox);
+            }
+
             float sampleDensity(float3 p) {
             
                 // Calculate texture sample positions
@@ -107,10 +134,10 @@ Shader "Unlit/CubeCloudVolume"
                 const float offsetSpeed = 1/100.0;
 
                 float time = _Time.x * _TimeScale;
-                float boundsMin = _Pos - _Bounds / 2;
-                float boundsMax = _Pos + _Bounds / 2;
-                float size = boundsMax - boundsMin;
-                float3 boundsCentre = (boundsMin+boundsMax) * .5;
+                // float boundsMin = _Pos - _Bounds / 2;
+                // float boundsMax = _Pos + _Bounds / 2;
+                float size = _BoundsMax - _BoundsMin;
+                float3 boundsCentre = (_BoundsMax+_BoundsMin) * .5;
                 float3 uvw = (size * .5 + p) * baseScale * _CloudScale;
                 float3 shapeSamplePos = uvw + _CloudOffset * offsetSpeed + float3(time,time*0.1,time*0.2) * _BaseCloudSpeed;
 
@@ -127,7 +154,7 @@ Shader "Unlit/CubeCloudVolume"
                 return 0;
             }
 
-            float3 rayMarch(float3 rayOrigin, float3 rayDir) {
+            float3 rayMarch(float3 rayOrigin, float3 rayDir, float stepSize) {
 
                 float density = 0;
                 float transmission = 0; 
@@ -137,32 +164,32 @@ Shader "Unlit/CubeCloudVolume"
 
                 for(int i = 0; i < _Steps; i++) {
 
-                    // Now we want to sample the volume at our new position
-                    //float distance = sdfSphere(rayOrigin, _Sphere.xyz, _SphereRadius);
-                    float distance = sdRoundBox(rayOrigin, _Bounds, 0.05);
-                    if(distance < 0) {
-                        density += sampleDensity(rayOrigin);
+                    density += sampleDensity(rayOrigin);
 
-                        // Light ray marching
-                        float3 lightRay = rayOrigin;
-                        float3 lightDir = normalize(_WorldSpaceLightPos0);
-                        for(int j = 0; j < _LightSteps; j++) {
-                            float lightDensity = sampleDensity(lightRay);
-                            accumulatedLight += lightDensity * _LightDensityScale;
+                    // Light ray marching
+                    float3 lightRay = rayOrigin;
+                    float3 lightDir = normalize(_WorldSpaceLightPos0);
+                    float2 rayBoxInfo = rayBoxDst(_BoundsMin, _BoundsMax, rayOrigin, 1/lightDir);
+                    float lightDst = rayBoxInfo.x;
+                    float lightInsideBox = rayBoxInfo.y;
+                    float lightStepSize = lightInsideBox / _LightSteps;
+                    for(int j = 0; j < _LightSteps; j++) {
+                        float lightDensity = sampleDensity(lightRay);
+                        accumulatedLight += lightDensity * _LightDensityScale;
 
-                            lightRay += lightDir * _LightStepSize;
-                        }
-
-                        float lightTransmission = exp(-accumulatedLight);
-                        float shadow = _LightDarknessThreshold + lightTransmission * (1 - _LightDarknessThreshold);
-                        light += density * transmittance * shadow;
-                        transmittance *= exp(-density * _LightAbsorbation);
+                        lightRay += lightDir * lightStepSize;
                     }
-                    rayOrigin += rayDir * _StepSize;
+
+                    float lightTransmission = exp(-accumulatedLight);
+                    float shadow = _LightDarknessThreshold + lightTransmission * (1 - _LightDarknessThreshold);
+                    light += density * transmittance * shadow;
+                    transmittance *= exp(-density * _LightAbsorbation);
+
+                    rayOrigin += rayDir * stepSize;
                 }
 
                 return float3(light, density, transmittance);
-            }
+            }   
             
             // -----------------------------------------------------------------------
             // Fragment shader
@@ -171,9 +198,16 @@ Shader "Unlit/CubeCloudVolume"
             {
                 // The ray origin will be a vector from the camera to the world vertex
                 float3 rayOrigin = i.worldVertex;
-                float3 rayDir = rayOrigin - _WorldSpaceCameraPos;
-                float3 rayDirNormalized = normalize(rayDir);
-                float3 result = rayMarch(rayOrigin, rayDirNormalized);
+                float3 rayDir = normalize(rayOrigin - _WorldSpaceCameraPos);
+                
+                float2 rayBoxInfo = rayBoxDst(_BoundsMin, _BoundsMax, _WorldSpaceCameraPos, 1/rayDir);
+                float dstInsideBox = rayBoxInfo.y; // How long the ray lives inside the box
+
+                // we only want to march while inside the box with _Steps number of steps which 
+                // all are equally distribuated along the ray.
+                float stepSize = dstInsideBox / _Steps;
+                float3 result = rayMarch(rayOrigin, rayDir, stepSize);
+
                 float light = result.x;
                 float density = result.y;
                 float transmittance = result.z;
