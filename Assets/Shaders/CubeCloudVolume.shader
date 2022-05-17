@@ -6,17 +6,18 @@ Shader "Unlit/CubeCloudVolume"
     }
     SubShader
     {
-        Cull Back ZWrite Off ZTest Always
+        Cull Back 
+        ZWrite Off 
+        ZTest Always
+        Blend OneMinusSrcAlpha OneMinusSrcAlpha
         Tags { 
             "Queue" = "Transparent" 
             "RenderType" = "Transparent" 
             "RenderPipeline" = "UniversalRenderPipeline"
         }
-        Blend One OneMinusSrcAlpha
-
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
 
@@ -147,13 +148,17 @@ Shader "Unlit/CubeCloudVolume"
                 float3 uvw = (size * .5 + p) * baseScale * _CloudScale;
                 float3 shapeSamplePos = uvw + _CloudOffset * offsetSpeed + float3(time,time*0.1,time*0.2) * _BaseCloudSpeed;
 
+                const float containerEdgeFadeDst = 100;
+                float dstFromEdgeX = min(containerEdgeFadeDst, min(p.x - _BoundsMin.x, _BoundsMax.x - p.x));
+                float dstFromEdgeZ = min(containerEdgeFadeDst, min(p.z - _BoundsMin.z, _BoundsMax.z - p.z));
+                float edgeWeight = min(dstFromEdgeZ,dstFromEdgeX)/containerEdgeFadeDst;
 
                 float4 noise_from_shape = NoiseTexture.SampleLevel(samplerNoiseTexture, shapeSamplePos, 0);
                 float4 noise_weights_normalized = _ShapeNoiseWeights / dot(_ShapeNoiseWeights, 1);
 
                 //not sure what this does
-                float4 noise_fbm = dot(noise_from_shape, noise_weights_normalized);
-                float base_density = noise_fbm + _DensityOffset * .1 ;
+                float4 noise_fbm = dot(noise_from_shape, noise_weights_normalized) ;
+                float base_density = (noise_fbm + _DensityOffset * .1) * edgeWeight ;
                 if (base_density > 0) {
                     // Sample detail noise
                     float3 detailSamplePos = uvw * _DetailNoiseScale + _DetailOffset * offsetSpeed + float3(time*.4,-time,time*0.1) * _DetailSpeed;
@@ -164,9 +169,9 @@ Shader "Unlit/CubeCloudVolume"
                     // Subtract detail noise from base shape (weighted by inverse density so that edges get eroded more than centre)
                     float oneMinusShape = 1 - noise_fbm;
                     float detailErodeWeight = oneMinusShape * oneMinusShape * oneMinusShape;
-                    float cloudDensity = base_density - (detailFBM) * detailErodeWeight * _DetailNoiseWeight;
+                    float cloudDensity = base_density - (1-detailFBM) * detailErodeWeight * _DetailNoiseWeight;
     
-                    return cloudDensity * _DensityScale * 0.1;
+                    return max(0, cloudDensity * _DensityScale * 0.1);
                 }
                 return 0;
             }
@@ -192,15 +197,15 @@ Shader "Unlit/CubeCloudVolume"
                     float lightStepSize = lightInsideBox / _LightSteps;
                     for(int j = 0; j < _LightSteps; j++) {
                         float lightDensity = sampleDensity(lightRay);
-                        accumulatedLight += lightDensity * _LightDensityScale * lightStepSize;
+                        accumulatedLight += max(0,lightDensity * _LightDensityScale * lightStepSize);
 
                         lightRay += lightDir * lightStepSize;
                     }
 
                     float lightTransmission = exp(-accumulatedLight);
                     float shadow = _LightDarknessThreshold + lightTransmission * (1 - _LightDarknessThreshold);
-                    transmittance *= exp(-density * _LightAbsorbation * stepSize);
-                    light += density * transmittance * shadow * stepSize;
+                    transmittance *= exp(-density * _LightAbsorbation);
+                    light += density * transmittance * shadow;
 
                     rayOrigin += rayDir * stepSize;
                 }
@@ -230,13 +235,13 @@ Shader "Unlit/CubeCloudVolume"
                 float transmittance = result.z;
                 // density = max(0, min(1, density));
 
-                float4 col = tex2D(_MainTex, i.uv);
-                col *= light * _LightColor0;
-                return col;
+                //float3 col = tex2D(_MainTex, i.uv);
+                float3 col = light * _LightColor0.rgb;
+                return float4(col,density);
                 //float4 col = float4(light,light,light,0);
                 //return col;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }
