@@ -13,7 +13,6 @@ Shader "Unlit/CubeCloudVolume"
             "RenderPipeline" = "UniversalRenderPipeline"
         }
         Blend One OneMinusSrcAlpha
-        LOD 100
 
         Pass
         {
@@ -33,6 +32,7 @@ Shader "Unlit/CubeCloudVolume"
             {
                 float4 vertex : SV_POSITION;
                 float3 worldVertex : TEXCOORD0;
+                float2 uv : TEXCOORD1;
             };
 
             // -----------------------------------------------------------------------
@@ -43,6 +43,7 @@ Shader "Unlit/CubeCloudVolume"
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.worldVertex = mul(unity_ObjectToWorld, v.vertex).xyz;
+                o.uv = v.uv;
 
                 return o;
             }
@@ -70,6 +71,10 @@ Shader "Unlit/CubeCloudVolume"
             float3 _Bounds;
             float _TimeScale;
             float _CloudScale;
+            float _DetailNoiseScale;
+            float3 _DetailOffset;
+            float _DetailSpeed;
+            float _DetailNoiseWeight;
             float _CloudOffset;
             float _BaseCloudSpeed;
             float3 _BoundsMax;
@@ -82,6 +87,7 @@ Shader "Unlit/CubeCloudVolume"
             float _LightAbsorbation;
             float _LightDarknessThreshold;
             float _LightTransmittance;
+            float4 _LightColor0;
 
             // -----------------------------------------------------------------------
             // Functions
@@ -149,7 +155,18 @@ Shader "Unlit/CubeCloudVolume"
                 float4 noise_fbm = dot(noise_from_shape, noise_weights_normalized);
                 float base_density = noise_fbm + _DensityOffset * .1 ;
                 if (base_density > 0) {
-                    return base_density * _DensityScale * .1;
+                    // Sample detail noise
+                    float3 detailSamplePos = uvw * _DetailNoiseScale + _DetailOffset * offsetSpeed + float3(time*.4,-time,time*0.1) * _DetailSpeed;
+                    float4 detailNoise = DetailTexture.SampleLevel(samplerDetailTexture, detailSamplePos, 0);
+                    float3 normalizedDetailWeights = _DetailNoiseWeights / dot(_DetailNoiseWeights, 1);
+                    float detailFBM = dot(detailNoise, normalizedDetailWeights);
+
+                    // Subtract detail noise from base shape (weighted by inverse density so that edges get eroded more than centre)
+                    float oneMinusShape = 1 - noise_fbm;
+                    float detailErodeWeight = oneMinusShape * oneMinusShape * oneMinusShape;
+                    float cloudDensity = base_density - (detailFBM) * detailErodeWeight * _DetailNoiseWeight;
+    
+                    return cloudDensity * _DensityScale * 0.1;
                 }
                 return 0;
             }
@@ -164,7 +181,7 @@ Shader "Unlit/CubeCloudVolume"
 
                 for(int i = 0; i < _Steps; i++) {
 
-                    density += sampleDensity(rayOrigin);
+                    density += sampleDensity(rayOrigin) * stepSize;
 
                     // Light ray marching
                     float3 lightRay = rayOrigin;
@@ -175,15 +192,15 @@ Shader "Unlit/CubeCloudVolume"
                     float lightStepSize = lightInsideBox / _LightSteps;
                     for(int j = 0; j < _LightSteps; j++) {
                         float lightDensity = sampleDensity(lightRay);
-                        accumulatedLight += lightDensity * _LightDensityScale;
+                        accumulatedLight += lightDensity * _LightDensityScale * lightStepSize;
 
                         lightRay += lightDir * lightStepSize;
                     }
 
                     float lightTransmission = exp(-accumulatedLight);
                     float shadow = _LightDarknessThreshold + lightTransmission * (1 - _LightDarknessThreshold);
-                    light += density * transmittance * shadow;
-                    transmittance *= exp(-density * _LightAbsorbation);
+                    transmittance *= exp(-density * _LightAbsorbation * stepSize);
+                    light += density * transmittance * shadow * stepSize;
 
                     rayOrigin += rayDir * stepSize;
                 }
@@ -212,8 +229,12 @@ Shader "Unlit/CubeCloudVolume"
                 float density = result.y;
                 float transmittance = result.z;
                 // density = max(0, min(1, density));
-                float4 col = float4(light,light,light,density);
+
+                float4 col = tex2D(_MainTex, i.uv);
+                col *= light * _LightColor0;
                 return col;
+                //float4 col = float4(light,light,light,0);
+                //return col;
             }
             ENDCG
         }

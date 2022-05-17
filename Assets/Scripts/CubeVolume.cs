@@ -17,8 +17,6 @@ public class CubeVolume : MonoBehaviour
     public float lightDarknessThreshold;
     public float lightTransmittance = 1;
 
-    
-
     [Header("Base Shape Settings")]
     public float cloudScale;
     public Vector3 cloudOffset;
@@ -27,6 +25,10 @@ public class CubeVolume : MonoBehaviour
     
     [Header("Detail Settings")]
     public Vector4 detailNoiseWeights;
+    public float detailNoiseScale;
+    public Vector3 detailOffset;
+    public float detailSpeed;
+    public float detailNoiseWeight;
 
     [Header("Animation")]
     public float animationSpeed;
@@ -75,7 +77,6 @@ public class CubeVolume : MonoBehaviour
         material.SetFloat("_LightDarknessThreshold", lightDarknessThreshold);
         material.SetFloat("_LightTransmittance", lightTransmittance);
 
-
         // Pos + Bounds
         material.SetVector("_Pos", transform.position);
         material.SetVector("_BoundsMax", transform.position + transform.localScale / 2.0f);
@@ -92,7 +93,12 @@ public class CubeVolume : MonoBehaviour
         material.SetFloat("_CloudScale", cloudScale);
         material.SetFloat("_BaseCloudSpeed", baseCloudSpeed);
 
-
+        // Detail
+        material.SetFloat("_DetailNoiseScale", detailNoiseScale);
+        material.SetVector("_DetailOffset", detailOffset);
+        material.SetFloat("_DetailSpeed", detailSpeed);
+        material.SetFloat("_DetailNoiseWeight", detailNoiseWeight);
+        
         // Textures
         material.SetTexture("NoiseTexture", noiseGen.shapeTexture);
         material.SetTexture("DetailTexture", noiseGen.detailTexture);
