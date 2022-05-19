@@ -6,4 +6,3 @@ github_username: davidasberg, andersblomqvist # DO NOT include the @ character, 
 show_excerpts: true # set to false to remove excerpts on the homepage
 theme: minima
 future: true
-math_engine: mathjax
