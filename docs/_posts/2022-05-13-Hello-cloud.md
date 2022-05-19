@@ -3,6 +3,7 @@ layout: post
 title: "Hello Cloud"
 date: 2022-05-13 12:31:00 -0000
 categories: Blog posts
+usemath: true
 ---
 Anders Blomqvist andblomq@kth.se 
 David Åsberg dasberg@kth.se 
@@ -67,4 +68,4 @@ fragment_shader()
 ```
 
 ## References
-[1] Wikipedia, Beer–Lambert law (https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law)
+[1] Wikipedia, [Beer–Lambert law](https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law)

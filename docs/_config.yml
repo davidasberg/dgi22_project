@@ -1,8 +1,9 @@
 title: DH2323 Project Blog
 author: David Åsberg, Anders Blomqvist
 email: dasberg@kth.se, andblomq@kth.se 
-github_username: davidasberg # DO NOT include the @ character, or else the build will fail!
+github_username: davidasberg, andersblomqvist # DO NOT include the @ character, or else the build will fail!
 
 show_excerpts: true # set to false to remove excerpts on the homepage
 theme: minima
 future: true
+math_engine: mathjax
