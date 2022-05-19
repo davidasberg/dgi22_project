@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "Hello cloud"
-date: 2022-05-13 15:35:00 -0000
+title: "Hello Cloud"
+date: 2022-05-11 15:36:00 -0000
 categories: Blog posts
 ---
 Anders Blomqvist andblomq@kth.se 
