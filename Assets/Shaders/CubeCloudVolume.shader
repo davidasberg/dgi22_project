@@ -8,8 +8,9 @@ Shader "Unlit/CubeCloudVolume"
     {
         Cull Back 
         ZWrite Off 
-        ZTest Always
-        Blend OneMinusSrcAlpha OneMinusSrcAlpha
+        ZTest Less
+        Blend One OneMinusSrcAlpha
+
         Tags { 
             "Queue" = "Transparent" 
             "RenderType" = "Transparent" 
@@ -19,7 +20,7 @@ Shader "Unlit/CubeCloudVolume"
         {
             HLSLPROGRAM
             #pragma vertex vert
-            #pragma fragment frag
+            #pragma fragment frag 
 
             #include "UnityCG.cginc"
 
@@ -156,9 +157,11 @@ Shader "Unlit/CubeCloudVolume"
                 float4 noise_from_shape = NoiseTexture.SampleLevel(samplerNoiseTexture, shapeSamplePos, 0);
                 float4 noise_weights_normalized = _ShapeNoiseWeights / dot(_ShapeNoiseWeights, 1);
 
-                //not sure what this does
+
                 float4 noise_fbm = dot(noise_from_shape, noise_weights_normalized) ;
                 float base_density = (noise_fbm + _DensityOffset * .1) * edgeWeight ;
+
+                //! Code taken from Sebastian Lague - https://www.youtube.com/watch?v=4QOcCGI6xOU&t
                 if (base_density > 0) {
                     // Sample detail noise
                     float3 detailSamplePos = uvw * _DetailNoiseScale + _DetailOffset * offsetSpeed + float3(time*.4,-time,time*0.1) * _DetailSpeed;
@@ -237,7 +240,7 @@ Shader "Unlit/CubeCloudVolume"
 
                 //float3 col = tex2D(_MainTex, i.uv);
                 float3 col = light * _LightColor0.rgb;
-                return float4(col,density);
+                return float4(col,0);
                 //float4 col = float4(light,light,light,0);
                 //return col;
             }
