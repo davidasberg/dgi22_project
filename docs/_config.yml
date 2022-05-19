@@ -5,3 +5,4 @@ github_username: dasberg # DO NOT include the @ character, or else the build wil
 
 show_excerpts: true # set to false to remove excerpts on the homepage
 theme: minima
+future: true
