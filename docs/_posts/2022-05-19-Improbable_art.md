@@ -15,8 +15,8 @@ For most of these issues we have no idea what is going on.
 
 ![](/dgi22_project/assets/improbable-art-1.gif)  
 
-![](/dgi22/assets/improbable-art-2.gif)  
+![](/dgi22_project/assets/improbable-art-2.gif)  
 
-![](/dgi22/assets/improbable_art_3.png)  
+![](/dgi22_project/assets/improbable_art_3.png)  
 
-![](/dgi22/assets/improbable_art_4_negative_density.gif)  
+![](/dgi22_project/assets/improbable_art_4_negative_density.gif)  
