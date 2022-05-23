@@ -80,6 +80,7 @@ Shader "Unlit/CubeCloudVolume"
             float _BaseCloudSpeed;
             float3 _BoundsMax;
             float3 _BoundsMin;
+            float _ContainerEdgeFadeDst;
 
             // Light
             int _LightSteps;
@@ -93,22 +94,7 @@ Shader "Unlit/CubeCloudVolume"
             // -----------------------------------------------------------------------
             // Functions
 
-            float sdfSphere(float3 p, float3 sphere, float radius) {
-                return length(p - sphere) - radius;
-            }
-
-            float sdBox( float3 p, float3 b )
-            {
-                float3 q = abs(p) - b;
-                return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
-            }
-
-            float sdRoundBox( float3 p, float3 b, float r )
-            {
-                float3 q = abs(p) - b;
-                return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
-            }
-
+            // Code taken from Sebastian Lague - https://www.youtube.com/watch?v=4QOcCGI6xOU&t
             // Returns (dstToBox, dstInsideBox). If ray misses box, dstInsideBox will be zero
             float2 rayBoxDst(float3 boundsMin, float3 boundsMax, float3 rayOrigin, float3 invRaydir) {
                 // Adapted from: http://jcgt.org/published/0007/03/04/
@@ -148,17 +134,16 @@ Shader "Unlit/CubeCloudVolume"
                 float3 uvw = (size * .5 + p) * baseScale * _CloudScale;
                 float3 shapeSamplePos = uvw + _CloudOffset * offsetSpeed + float3(time,time*0.1,time*0.2) * _BaseCloudSpeed;
 
-                const float containerEdgeFadeDst = 100;
-                float dstFromEdgeX = min(containerEdgeFadeDst, min(p.x - _BoundsMin.x, _BoundsMax.x - p.x));
-                float dstFromEdgeZ = min(containerEdgeFadeDst, min(p.z - _BoundsMin.z, _BoundsMax.z - p.z));
-                float edgeWeight = min(dstFromEdgeZ,dstFromEdgeX)/containerEdgeFadeDst;
+                float dstFromEdgeX = min(_ContainerEdgeFadeDst, min(p.x - _BoundsMin.x, _BoundsMax.x - p.x));
+                float dstFromEdgeZ = min(_ContainerEdgeFadeDst, min(p.z - _BoundsMin.z, _BoundsMax.z - p.z));
+                float edgeWeight = min(dstFromEdgeZ,dstFromEdgeX)/_ContainerEdgeFadeDst;
 
                 float4 noise_from_shape = NoiseTexture.SampleLevel(samplerNoiseTexture, shapeSamplePos, 0);
                 float4 noise_weights_normalized = _ShapeNoiseWeights / dot(_ShapeNoiseWeights, 1);
 
                 //not sure what this does
-                float4 noise_fbm = dot(noise_from_shape, noise_weights_normalized) ;
-                float base_density = (noise_fbm + _DensityOffset * .1) * edgeWeight ;
+                float4 noise_fbm = dot(noise_from_shape, noise_weights_normalized);
+                float base_density = (noise_fbm + _DensityOffset * .1) * edgeWeight;
                 if (base_density > 0) {
                     // Sample detail noise
                     float3 detailSamplePos = uvw * _DetailNoiseScale + _DetailOffset * offsetSpeed + float3(time*.4,-time,time*0.1) * _DetailSpeed;
@@ -207,6 +192,10 @@ Shader "Unlit/CubeCloudVolume"
                     transmittance *= exp(-density * _LightAbsorbation);
                     light += density * transmittance * shadow;
 
+                    if(transmittance < 0.01) {
+                        break;
+                    }
+
                     rayOrigin += rayDir * stepSize;
                 }
 
@@ -225,7 +214,7 @@ Shader "Unlit/CubeCloudVolume"
                 float2 rayBoxInfo = rayBoxDst(_BoundsMin, _BoundsMax, _WorldSpaceCameraPos, 1/rayDir);
                 float dstInsideBox = rayBoxInfo.y; // How long the ray lives inside the box
 
-                // we only want to march while inside the box with _Steps number of steps which 
+                // We only want to march while inside the box with _Steps number of steps which 
                 // all are equally distribuated along the ray.
                 float stepSize = dstInsideBox / _Steps;
                 float3 result = rayMarch(rayOrigin, rayDir, stepSize);
@@ -233,13 +222,9 @@ Shader "Unlit/CubeCloudVolume"
                 float light = result.x;
                 float density = result.y;
                 float transmittance = result.z;
-                density = max(0, min(1, density));
 
-                // float3 col = tex2D(_MainTex, i.uv);
                 float3 col = light * _LightColor0.rgb;
-                //return float4(col,density);
-                return float4(col,density);
-                //return col;
+                return float4(col,0);
             }
             ENDHLSL
         }

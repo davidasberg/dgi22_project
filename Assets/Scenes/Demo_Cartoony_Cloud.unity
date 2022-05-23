@@ -123,131 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!21 &191852193
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Unlit/CubeCloudVolume
-  m_Shader: {fileID: 4800000, guid: c84e3210e35b7494c813f4c0c47dc0b8, type: 3}
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats: []
-    m_Colors: []
-  m_BuildTextureStacks: []
---- !u!84 &472182817
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ShapeTexture
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 5
-  m_Width: 300
-  m_Height: 300
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 24
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 1
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_Dimension: 3
-  m_VolumeDepth: 300
-  m_ShadowSamplingMode: 2
---- !u!1 &553284523
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 553284524}
-  - component: {fileID: 553284525}
-  m_Layer: 0
-  m_Name: NoiseGen
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &553284524
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 553284523}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.9372087, y: 1.9148737, z: 0.079561986}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &553284525
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 553284523}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a2b1f6b9af883b4da898890cd29c60c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  shapeRes: 128
-  detailRes: 32
-  shapeSettings:
-  - {fileID: 11400000, guid: 83b269d14fc568d42bb5cf42278fb7ac, type: 2}
-  - {fileID: 11400000, guid: 39fc80ded50c03a4baaed882f40f33ce, type: 2}
-  - {fileID: 11400000, guid: c42f17b7396c37c47b49c4486881894d, type: 2}
-  - {fileID: 11400000, guid: 21073be2006aaa04bb0f76a22c357a59, type: 2}
-  detailSettings:
-  - {fileID: 11400000, guid: 7dc82075ab8409047bf7359ddeeef46d, type: 2}
-  - {fileID: 11400000, guid: 8a4f64ab6d58d8e428a2114453e9ba11, type: 2}
-  - {fileID: 11400000, guid: 25f930d3d291c734eadefde3cb435abc, type: 2}
-  - {fileID: 11400000, guid: b6b0682040684884b99071df3c1dc7c1, type: 2}
-  worleyCompute: {fileID: 7200000, guid: b3c8579dd2d29b942b8d6565731a46bc, type: 3}
-  shapeTexture: {fileID: 8400000, guid: 5287edfbd4a7436489c8d942a4e14aad, type: 2}
-  detailTexture: {fileID: 8400000, guid: 216622435633bd446b9aa3027f455c87, type: 2}
-  updateNoise: 1
 --- !u!1 &943967295
 GameObject:
   m_ObjectHideFlags: 0
@@ -262,7 +137,7 @@ GameObject:
   - component: {fileID: 943967300}
   - component: {fileID: 943967301}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Clouds
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -288,7 +163,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 191852193}
+  - {fileID: 1207896654}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -331,7 +206,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &943967300
 MonoBehaviour:
@@ -354,6 +229,7 @@ MonoBehaviour:
   lightAbsorbation: 0.9
   lightDarknessThreshold: 0.5
   lightTransmittance: 1
+  containerEdgeFadeDst: 2000
   cloudScale: 0.3
   cloudOffset: {x: 0, y: 0, z: 0}
   densityOffset: 0
@@ -392,65 +268,44 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 25f930d3d291c734eadefde3cb435abc, type: 2}
   - {fileID: 11400000, guid: b6b0682040684884b99071df3c1dc7c1, type: 2}
   worleyCompute: {fileID: 7200000, guid: b3c8579dd2d29b942b8d6565731a46bc, type: 3}
-  shapeTexture: {fileID: 472182817}
-  detailTexture: {fileID: 1707700308}
+  shapeTexture: {fileID: 1720029028}
+  detailTexture: {fileID: 2031484351}
   updateNoise: 0
---- !u!1 &1520561447
-GameObject:
+--- !u!21 &1207896654
+Material:
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1520561449}
-  - component: {fileID: 1520561448}
-  m_Layer: 0
-  m_Name: Global Volume
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1520561448
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1520561447}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IsGlobal: 1
-  priority: 0
-  blendDistance: 0
-  weight: 1
-  sharedProfile: {fileID: 11400000, guid: a6560a915ef98420e9faacc1c7438823, type: 2}
---- !u!4 &1520561449
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1520561447}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!84 &1707700308
+  m_Name: Unlit/CubeCloudVolume
+  m_Shader: {fileID: 4800000, guid: c84e3210e35b7494c813f4c0c47dc0b8, type: 3}
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats: []
+    m_Colors: []
+  m_BuildTextureStacks: []
+--- !u!84 &1720029028
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: DetailTexture
+  m_Name: ShapeTexture
   m_ImageContentsHash:
     serializedVersion: 2
     Hash: 00000000000000000000000000000000
@@ -458,8 +313,8 @@ RenderTexture:
   m_DownscaleFallback: 0
   m_IsAlphaChannelOptional: 0
   serializedVersion: 5
-  m_Width: 1
-  m_Height: 1
+  m_Width: 300
+  m_Height: 300
   m_AntiAliasing: 1
   m_MipCount: -1
   m_DepthStencilFormat: 0
@@ -479,7 +334,7 @@ RenderTexture:
     m_WrapV: 0
     m_WrapW: 0
   m_Dimension: 3
-  m_VolumeDepth: 1
+  m_VolumeDepth: 300
   m_ShadowSamplingMode: 2
 --- !u!1 &2030828055
 GameObject:
@@ -609,6 +464,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1b3cb28a2be7b64281e0a42426dd01f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!84 &2031484351
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DetailTexture
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 5
+  m_Width: 1
+  m_Height: 1
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 24
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 1
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 0
+    m_WrapV: 0
+    m_WrapW: 0
+  m_Dimension: 3
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &2082187877
 GameObject:
   m_ObjectHideFlags: 0

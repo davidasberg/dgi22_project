@@ -18,11 +18,12 @@ public class CubeVolume : MonoBehaviour
     public float lightTransmittance = 1;
 
     [Header("Base Shape Settings")]
+    public float containerEdgeFadeDst;
     public float cloudScale;
     public Vector3 cloudOffset;
     public float densityOffset;
     public Vector4 shapeNoiseWeights;
-    
+
     [Header("Detail Settings")]
     public Vector4 detailNoiseWeights;
     public float detailNoiseScale;
@@ -68,6 +69,7 @@ public class CubeVolume : MonoBehaviour
         material.SetFloat("_Steps", steps);
         material.SetFloat("_StepSize", stepSize);
         material.SetFloat("_DensityScale", densityScale);
+        material.SetFloat("_ContainerEdgeFadeDst", containerEdgeFadeDst);
 
         // Light march settings
         material.SetInt("_LightSteps", lightSteps);
