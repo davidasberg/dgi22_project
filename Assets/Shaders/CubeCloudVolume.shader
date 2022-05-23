@@ -9,7 +9,7 @@ Shader "Unlit/CubeCloudVolume"
         
         ZWrite Off 
         ZTest Always
-        Blend One OneMinusSrcAlpha
+        Blend OneMinusSrcAlpha OneMinusSrcAlpha
         Tags { 
             "Queue" = "Transparent" 
             "RenderType" = "Transparent" 
@@ -148,7 +148,7 @@ Shader "Unlit/CubeCloudVolume"
                 float3 uvw = (size * .5 + p) * baseScale * _CloudScale;
                 float3 shapeSamplePos = uvw + _CloudOffset * offsetSpeed + float3(time,time*0.1,time*0.2) * _BaseCloudSpeed;
 
-                const float containerEdgeFadeDst = 2000;
+                const float containerEdgeFadeDst = 100;
                 float dstFromEdgeX = min(containerEdgeFadeDst, min(p.x - _BoundsMin.x, _BoundsMax.x - p.x));
                 float dstFromEdgeZ = min(containerEdgeFadeDst, min(p.z - _BoundsMin.z, _BoundsMax.z - p.z));
                 float edgeWeight = min(dstFromEdgeZ,dstFromEdgeX)/containerEdgeFadeDst;
@@ -206,10 +206,6 @@ Shader "Unlit/CubeCloudVolume"
                     float shadow = _LightDarknessThreshold + lightTransmission * (1 - _LightDarknessThreshold);
                     transmittance *= exp(-density * _LightAbsorbation);
                     light += density * transmittance * shadow;
-
-                    if(transmittance < 0.1) {
-                        break;
-                    }
 
                     rayOrigin += rayDir * stepSize;
                 }

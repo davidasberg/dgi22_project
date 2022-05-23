@@ -1,4 +1,14 @@
 
+
+/*
+
+
+The majority of this code is from the following source:
+https://www.youtube.com/watch?v=4QOcCGI6xOU&t
+
+
+*/
+
 #pragma kernel CSWorleyNoise
 #pragma kernel CSWorleyNormalize
 

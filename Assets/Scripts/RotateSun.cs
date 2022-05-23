@@ -11,7 +11,7 @@ public class RotateSun : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         //rotate y axis
         transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, Time.time * 20, transform.rotation.eulerAngles.z);
