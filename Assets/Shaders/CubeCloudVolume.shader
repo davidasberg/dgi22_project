@@ -110,6 +110,8 @@ Shader "Unlit/CubeCloudVolume"
                 return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
             }
 
+
+            // Code taken from Sebastian Lague - https://www.youtube.com/watch?v=4QOcCGI6xOU&t
             // Returns (dstToBox, dstInsideBox). If ray misses box, dstInsideBox will be zero
             float2 rayBoxDst(float3 boundsMin, float3 boundsMax, float3 rayOrigin, float3 invRaydir) {
                 // Adapted from: http://jcgt.org/published/0007/03/04/
