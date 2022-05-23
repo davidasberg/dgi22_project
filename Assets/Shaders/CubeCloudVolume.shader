@@ -6,10 +6,10 @@ Shader "Unlit/CubeCloudVolume"
     }
     SubShader
     {
-        Cull Back 
+        
         ZWrite Off 
         ZTest Always
-        Blend OneMinusSrcAlpha OneMinusSrcAlpha
+        Blend One OneMinusSrcAlpha
         Tags { 
             "Queue" = "Transparent" 
             "RenderType" = "Transparent" 
@@ -148,7 +148,7 @@ Shader "Unlit/CubeCloudVolume"
                 float3 uvw = (size * .5 + p) * baseScale * _CloudScale;
                 float3 shapeSamplePos = uvw + _CloudOffset * offsetSpeed + float3(time,time*0.1,time*0.2) * _BaseCloudSpeed;
 
-                const float containerEdgeFadeDst = 100;
+                const float containerEdgeFadeDst = 2000;
                 float dstFromEdgeX = min(containerEdgeFadeDst, min(p.x - _BoundsMin.x, _BoundsMax.x - p.x));
                 float dstFromEdgeZ = min(containerEdgeFadeDst, min(p.z - _BoundsMin.z, _BoundsMax.z - p.z));
                 float edgeWeight = min(dstFromEdgeZ,dstFromEdgeX)/containerEdgeFadeDst;
@@ -207,6 +207,10 @@ Shader "Unlit/CubeCloudVolume"
                     transmittance *= exp(-density * _LightAbsorbation);
                     light += density * transmittance * shadow;
 
+                    if(transmittance < 0.1) {
+                        break;
+                    }
+
                     rayOrigin += rayDir * stepSize;
                 }
 
@@ -233,12 +237,12 @@ Shader "Unlit/CubeCloudVolume"
                 float light = result.x;
                 float density = result.y;
                 float transmittance = result.z;
-                // density = max(0, min(1, density));
+                density = max(0, min(1, density));
 
-                //float3 col = tex2D(_MainTex, i.uv);
+                // float3 col = tex2D(_MainTex, i.uv);
                 float3 col = light * _LightColor0.rgb;
+                //return float4(col,density);
                 return float4(col,density);
-                //float4 col = float4(light,light,light,0);
                 //return col;
             }
             ENDHLSL

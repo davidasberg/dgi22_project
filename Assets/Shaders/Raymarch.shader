@@ -58,6 +58,7 @@ Shader "Unlit/DemoShader"
             }
 
             float sampleDensity1(float3 samplePos) {
+
                 float density = NoiseTexture.SampleLevel(samplerNoiseTexture, samplePos, 0).r;
                 if(density > 0) {
                     return density * DENSITY;
@@ -89,20 +90,44 @@ Shader "Unlit/DemoShader"
                 float3 rayDir = normalize(rayOrigin - _WorldSpaceCameraPos);
 
                 // Ray march along our line and accumulate color
-                float3 color = float3(0,0,0);
+                float light = 0;
+                float density = 0;
+                float accumulatedLight = 0;
+                float transmittance = 0;
                 for(int i = 0; i < STEPS; i++) {
 
                     float distance = sdfSphere(rayOrigin, float3(0,0,0), 0.4);
 
                     // Only accumulate color if we are inside the sphere
                     if(distance < 0) {
-                        color += sampleDensity2(rayOrigin);
+                        density += sampleDensity2(rayOrigin);
+
+                        // Light ray marching
+                        float3 lightRay = rayOrigin;
+                        float3 lightDir = normalize(_WorldSpaceLightPos0);
+                        const float lightStepSize = 0.01;
+                        const float _LightDensityScale = 0.1;
+                        for(int j = 0; j < 16; j++) {
+                            float lightDensity = sampleDensity2(lightRay);
+                            accumulatedLight += max(0,lightDensity * _LightDensityScale * lightStepSize);
+
+                            lightRay += lightDir * lightStepSize;
+                        }
+
+                        float lightTransmission = exp(-accumulatedLight);
+                        float shadow = 0.1 + lightTransmission * (1 - 0.1);
+                        transmittance *= exp(-density);
+                        light += density * transmittance * shadow;
+
+                        if(transmittance < 0.1) {
+                            break;
+                        }
                     }
 
                     rayOrigin += rayDir * STEP_SIZE;
                 }
 
-                return float4(color, 0);
+                return float4(light, light, light, 1);
             }
             ENDCG
         }
