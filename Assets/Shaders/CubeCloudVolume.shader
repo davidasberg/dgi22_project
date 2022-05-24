@@ -9,8 +9,7 @@ Shader "Unlit/CubeCloudVolume"
         
         ZWrite Off 
         ZTest Less
-        Blend SrcAlpha OneMinusSrcAlpha // Traditional transparency
-        BlendOP Max        
+        Blend OneMinusSrcAlpha OneMinusSrcAlpha // Traditional transparency
         Tags { 
             "Queue" = "Transparent" 
             "RenderType" = "Transparent" 
