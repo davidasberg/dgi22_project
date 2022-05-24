@@ -2,12 +2,13 @@
 
 /*
 
-
 The majority of this code is from the following source:
 https://www.youtube.com/watch?v=4QOcCGI6xOU&t
 
+And has been modified to fit the needs of this project.
 
 */
+
 
 #pragma kernel CSWorleyNoise
 #pragma kernel CSWorleyNormalize
@@ -31,6 +32,8 @@ float persistence;
 bool inv;
 int tile; 
 
+
+// All the different neighboring cells
 static const int3 offsets[] =
 {
     // centre
@@ -74,6 +77,7 @@ float minComponent(float3 vec) {
     return min(vec.x, min(vec.y, vec.z));
 }
 
+// Returns the distance between the pixel, and the nearest of the scattered points
 float worley(StructuredBuffer<float3> points, int numCells, float3 samplePos) {
     samplePos = (samplePos * tile)%1;
     int3 cell = floor (samplePos * numCells);
@@ -110,6 +114,8 @@ void CSWorleyNoise (uint3 threadId : SV_DispatchThreadID) {
     float layerA = worley(pointsA, numDivisionsA, pos);
     float layerB = worley(pointsB, numDivisionsB, pos);
     float layerC = worley(pointsC, numDivisionsC, pos);
+
+    //blends the layers together
     float noise = layerA + layerB * persistence + layerC * persistence * persistence;
     
     // keep within [0,1]
@@ -140,7 +146,7 @@ void CSWorleyNoise (uint3 threadId : SV_DispatchThreadID) {
     else if (channel == 3) {
         channelMask.w = 1;
     }
-    
+    // write result to correct channel of the texture buffer
     Result[threadId] = Result[threadId] * (1-channelMask) + noise * channelMask;
 }
 

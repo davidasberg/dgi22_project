@@ -3,6 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+
+/*
+
+The majority of this code is from the following source:
+https://www.youtube.com/watch?v=4QOcCGI6xOU&t
+
+And has been modified to fit the needs of this project.
+
+*/
+
 public class NoiseGen : MonoBehaviour
 {
 
@@ -27,12 +37,14 @@ public class NoiseGen : MonoBehaviour
     private List<ComputeBuffer> buffersToRelease = new List<ComputeBuffer>();
     const int computeThreadGroupSize = 8;
 
+    // can be used to update the noise
     public void ManualUpdateNoise()
     {
         updateNoise = true;
         GenerateNoise();
     }
 
+    //Creates the two noise textures
     public void GenerateNoise() {
         CreateTexture(ref shapeTexture, shapeRes, "ShapeTexture");
         CreateTexture(ref detailTexture, detailRes, "DetailTexture");
@@ -50,6 +62,7 @@ public class NoiseGen : MonoBehaviour
         }
     }
 
+    //Creates a worley 3d texture, by using the compute shader
     public void WorleyNoise(WorleySettings noiseSettings, ref RenderTexture output, int channel) {
 
         // Send compute shader data
@@ -100,6 +113,7 @@ public class NoiseGen : MonoBehaviour
         texture.filterMode = FilterMode.Bilinear;
     }
 
+    // Create a compute buffer with the given data
     public ComputeBuffer CreateBuffer(System.Array data, int stride, string name, int kernel = 0) {
     
         var buffer = new ComputeBuffer(data.Length, stride, ComputeBufferType.Structured);
@@ -109,6 +123,7 @@ public class NoiseGen : MonoBehaviour
         return buffer;
     }
 
+    // Scatter random points in 3d, and create a buffer with them
     public void CreateWorleyBuffer(System.Random random, int numDivs, string name) {
         var points = new Vector3[numDivs*numDivs*numDivs];
         float divSize = 1f / numDivs;
@@ -127,15 +142,8 @@ public class NoiseGen : MonoBehaviour
         CreateBuffer(points, sizeof(float)*3, name);
     }
 
+    //when we change values in the inspector, we want to update the noise
     public void OnValidate() {
         updateNoise = true;
     }
-
-    public void SaveNoiseToFile() {
-        //write shape and detail textures to 3D Texture Asset
-        //and save to file
-        AssetDatabase.CreateAsset(shapeTexture, "Assets/Resources/Noise/ShapeTexture.asset");
-        AssetDatabase.CreateAsset(detailTexture, "Assets/Resources/Noise/DetailTexture.asset");
-    }
-
 }
