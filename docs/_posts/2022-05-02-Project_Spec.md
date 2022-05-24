@@ -10,7 +10,7 @@ David Åsberg dasberg@kth.se
 # DH2323 Project Specification  
 
 We aim for an A grade.
-We are going to use the Unity3D engine for our implementation.
+We are going to use the Unity3D engine to render procedurally generated clouds.
 
 Link to our blog: https://davidasberg.github.io/dgi22_project/ 
 
@@ -33,10 +33,7 @@ Ray Marching can be used for a lot of different visual effects and other impleme
 - Rendering other kinds of parametric surfaces where intersection is not known ahead of time, like parallax mapping
 
 ## Problem  
-The main graphical method we will be implementing is Ray Marching using shaders in Unity. Unity was chosen because of its ease of use and flexibility. Unity gives us an editor where we can easily edit parameters, change the scene and so on. It also gives us the tools to write our own renderer that runs on the GPU using shaders, which are small programs written in a shader language such as GLSL or HLSL. 
-
-## Risks and challenges  
-The main risk and challenge lies in what type of visual effect we want to achieve with ray marching. Here we will attempt to mitigate the risk by first focusing on the ray marching method and then see what challenge we are ready to take. This means we will do ray marching and a basic visualization in order to have something to show. Then we will focus on a more complex visualization. Right now, before anything has been made, it is hard to say whether we will implement clouds, volumetric lightning  or something else.
+We will be implementing a cloud renderer using Ray Marching in Unity. Unity was chosen because of its ease of use and flexibility. Unity gives us an editor where we can easily edit parameters, change the scene and so on. It also gives us the tools to write our own renderer that runs on the GPU using shaders, which are small programs written in a shader language such as GLSL or HLSL. 
 
 ## References  
 [1] Walczyk, Michael. [Ray Marching](https://michaelwalczyk.com/blog-ray-marching.html)
