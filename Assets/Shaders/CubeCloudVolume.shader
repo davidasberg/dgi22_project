@@ -8,8 +8,9 @@ Shader "Unlit/CubeCloudVolume"
     {
         
         ZWrite Off 
-        ZTest Always
-        Blend OneMinusSrcAlpha OneMinusSrcAlpha
+        ZTest Less
+        Blend SrcAlpha OneMinusSrcAlpha // Traditional transparency
+        BlendOP Max        
         Tags { 
             "Queue" = "Transparent" 
             "RenderType" = "Transparent" 
@@ -141,7 +142,7 @@ Shader "Unlit/CubeCloudVolume"
                 float4 noise_from_shape = NoiseTexture.SampleLevel(samplerNoiseTexture, shapeSamplePos, 0);
                 float4 noise_weights_normalized = _ShapeNoiseWeights / dot(_ShapeNoiseWeights, 1);
 
-                //not sure what this does
+                //this blends between the channels of the noise texture, according to the weights
                 float4 noise_fbm = dot(noise_from_shape, noise_weights_normalized);
                 float base_density = (noise_fbm + _DensityOffset * .1) * edgeWeight;
                 if (base_density > 0) {
