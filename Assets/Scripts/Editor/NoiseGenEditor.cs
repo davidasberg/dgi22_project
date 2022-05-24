@@ -15,9 +15,8 @@ public class NoiseGenEditor : Editor {
     
         DrawDefaultInspector();
 
-        if (GUILayout.Button("Generate Noise To Texture File")) {
+        if (GUILayout.Button("Update Noise")) {
             noiseGen.ManualUpdateNoise();
-            noiseGen.SaveNoiseToFile();
         }
     
     }
