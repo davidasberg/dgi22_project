@@ -44,8 +44,6 @@ public class CubeVolume : MonoBehaviour
 
     private NoiseGen noiseGen;
 
-
-
     private void Start()
     {
         meshRenderer = GetComponent<MeshRenderer>();
@@ -60,10 +58,6 @@ public class CubeVolume : MonoBehaviour
     private void Update()
     {
         noiseGen.GenerateNoise();
-
-        // get radius (depening on volume scale)
-        float radius = transform.localScale.x / 3;
-        material.SetFloat("_SphereRadius", radius);
 
         // Ray marching settings
         material.SetFloat("_Steps", steps);
@@ -104,7 +98,6 @@ public class CubeVolume : MonoBehaviour
         // Textures
         material.SetTexture("NoiseTexture", noiseGen.shapeTexture);
         material.SetTexture("DetailTexture", noiseGen.detailTexture);
-        
 
         meshRenderer.material = material;
     }
